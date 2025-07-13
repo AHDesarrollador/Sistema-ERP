@@ -1,9 +1,4 @@
-# 🔗 API COMPLETA Y DOCUMENTADA
-
-## ✅ **PROBLEMA DE API RESUELTO**
-
-La URL `/api/` ahora funciona correctamente y muestra una navegación completa de todos los endpoints disponibles.
-
+## ✅ **DOCUMETACION DE LA API**
 ---
 
 ## 🌐 **NUEVAS URLS FUNCIONALES**
