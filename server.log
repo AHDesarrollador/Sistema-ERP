@@ -1,0 +1,5 @@
+Watching for file changes with StatReloader
+[13/Jul/2025 01:05:44] "HEAD /admin/ HTTP/1.1" 302 0
+[13/Jul/2025 01:05:49] "GET /api/inventory/stats/ HTTP/1.1" 200 111
+[13/Jul/2025 01:07:07] "GET /admin/ HTTP/1.1" 302 0
+[13/Jul/2025 01:07:07] "GET /admin/login/?next=/admin/ HTTP/1.1" 200 4170

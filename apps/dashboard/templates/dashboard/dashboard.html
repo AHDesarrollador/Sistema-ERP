@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>ERP Dashboard</title>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body>
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+        <div class="container">
+            <a class="navbar-brand" href="#">ERP System</a>
+            <div class="navbar-nav ml-auto">
+                <a class="nav-link" href="/admin/">Admin</a>
+                <a class="nav-link" href="/api/">API</a>
+                <a class="nav-link" href="{% url 'dashboard:dashboard' %}">Dashboard</a>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container-fluid mt-3">
+        <div class="row">
+            <div class="col-12">
+                <h2>Interactive Dashboard</h2>
+                <p>Welcome to the ERP Dashboard. Use your API token to access real-time data.</p>
+                
+                <div id="dash-container">
+                    <!-- Dash app will be loaded here -->
+                    <iframe src="{{ dash_app_url }}" 
+                            width="100%" 
+                            height="800px" 
+                            frameborder="0">
+                    </iframe>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+</body>
+</html>
