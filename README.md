@@ -25,7 +25,7 @@ Sistema ERP completo con Django y Dashboard interactivo usando Plotly Dash.
 
 ### 1. Clona el proyecto
 ```bash
-git clone <repo-url>
+git clone https://github.com/AHDesarrollador/Sistema-ERP.git
 cd erp_dashboard_project
 ```
 
