@@ -1,20 +1,53 @@
-from django.shortcuts import render
-from django.contrib.auth.decorators import login_required
+from django.shortcuts import render, redirect
+from django.contrib.auth.decorators import login_required, permission_required
+from django.contrib import messages
 from django.http import JsonResponse
 from django.db.models import Sum, Count, Avg, F
 from django.db import models
+from django.core.exceptions import PermissionDenied
 from apps.inventory.models import Product, Category
 from apps.sales.models import Sale
 from datetime import datetime, timedelta
 
+def check_dashboard_permission(user):
+    """Check if user has dashboard access"""
+    if user.is_superuser:
+        return True
+    return user.can_view_dashboard or user.has_perm('users.view_dashboard')
+
+@login_required
 def dashboard_view(request):
-    """Main dashboard view"""
-    return render(request, 'dashboard/dashboard.html')
+    """Main dashboard view - requires authentication and dashboard permission"""
+    # Check if user has dashboard permission
+    if not check_dashboard_permission(request.user):
+        messages.error(request, 'You do not have permission to access the dashboard. Please contact your administrator.')
+        return render(request, 'dashboard/access_denied.html', {
+            'user': request.user,
+            'required_permission': 'Dashboard Access'
+        })
+    
+    # Get user permissions for frontend
+    user_permissions = {
+        'can_view_dashboard': check_dashboard_permission(request.user),
+        'can_manage_inventory': request.user.is_superuser or request.user.can_manage_inventory,
+        'can_manage_sales': request.user.is_superuser or request.user.can_manage_sales,
+        'is_admin': request.user.is_superuser,
+        'is_manager': request.user.is_manager,
+    }
+    
+    return render(request, 'dashboard/dashboard.html', {
+        'user_permissions': user_permissions,
+        'user': request.user
+    })
 
 def dashboard_api_data(request):
     """API endpoint for dashboard data"""
     if not request.user.is_authenticated:
         return JsonResponse({'error': 'Authentication required'}, status=401)
+    
+    # Check dashboard permission
+    if not check_dashboard_permission(request.user):
+        return JsonResponse({'error': 'Dashboard access denied'}, status=403)
     
     # Get date ranges
     today = datetime.now().date()

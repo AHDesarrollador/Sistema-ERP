@@ -4,10 +4,11 @@ from .models import User, UserProfile
 
 @admin.register(User)
 class UserAdmin(BaseUserAdmin):
-    list_display = ['username', 'email', 'first_name', 'last_name', 'is_manager', 'is_staff']
-    list_filter = ['is_manager', 'is_staff', 'is_superuser', 'department']
+    list_display = ['username', 'email', 'first_name', 'last_name', 'is_manager', 'can_view_dashboard', 'is_staff']
+    list_filter = ['is_manager', 'is_staff', 'is_superuser', 'department', 'can_view_dashboard', 'can_manage_inventory', 'can_manage_sales']
     fieldsets = BaseUserAdmin.fieldsets + (
         ('Additional Info', {'fields': ('phone', 'department', 'is_manager')}),
+        ('ERP Permissions', {'fields': ('can_view_dashboard', 'can_manage_inventory', 'can_manage_sales')}),
     )
 
 @admin.register(UserProfile)

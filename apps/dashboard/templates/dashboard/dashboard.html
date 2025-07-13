@@ -5,38 +5,303 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+    <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+    <style>
+        .stat-card {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+        .stat-value {
+            font-size: 2.5rem;
+            font-weight: bold;
+        }
+        .stat-label {
+            font-size: 1rem;
+            opacity: 0.9;
+        }
+        .chart-container {
+            background: white;
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .loading {
+            text-align: center;
+            padding: 50px;
+            color: #666;
+        }
+    </style>
 </head>
 <body>
     <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
         <div class="container">
-            <a class="navbar-brand" href="#">ERP System</a>
+            <a class="navbar-brand" href="#">🏢 ERP System</a>
             <div class="navbar-nav ml-auto">
-                <a class="nav-link" href="/admin/">Admin</a>
-                <a class="nav-link" href="/api/">API</a>
-                <a class="nav-link" href="{% url 'dashboard:dashboard' %}">Dashboard</a>
+                <a class="nav-link" href="/admin/">👨‍💼 Admin</a>
+                <a class="nav-link" href="/api/">🔗 API</a>
+                <a class="nav-link" href="{% url 'dashboard:dashboard' %}">📊 Dashboard</a>
             </div>
         </div>
     </nav>
 
     <div class="container-fluid mt-3">
+        <!-- Header -->
         <div class="row">
             <div class="col-12">
-                <h2>Interactive Dashboard</h2>
-                <p>Welcome to the ERP Dashboard. Use your API token to access real-time data.</p>
-                
-                <div id="dash-container">
-                    <!-- Dash app will be loaded here -->
-                    <iframe src="{{ dash_app_url }}" 
-                            width="100%" 
-                            height="800px" 
-                            frameborder="0">
-                    </iframe>
+                <h1>📊 ERP Dashboard</h1>
+                <p class="text-muted">Real-time business metrics and analytics</p>
+                <button class="btn btn-primary mb-3" onclick="refreshData()">🔄 Refresh Data</button>
+            </div>
+        </div>
+
+        <!-- Stats Cards -->
+        <div class="row" id="stats-row">
+            <div class="col-md-3">
+                <div class="stat-card">
+                    <div class="stat-value" id="total-products">-</div>
+                    <div class="stat-label">Total Products</div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="stat-card" style="background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);">
+                    <div class="stat-value" id="stock-value">-</div>
+                    <div class="stat-label">Stock Value</div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="stat-card" style="background: linear-gradient(135deg, #ff6b6b 0%, #feca57 100%);">
+                    <div class="stat-value" id="low-stock">-</div>
+                    <div class="stat-label">Low Stock Items</div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="stat-card" style="background: linear-gradient(135deg, #5f27cd 0%, #341f97 100%);">
+                    <div class="stat-value" id="total-sales">-</div>
+                    <div class="stat-label">This Month Sales</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Charts -->
+        <div class="row">
+            <div class="col-md-6">
+                <div class="chart-container">
+                    <h4>📈 Sales Performance</h4>
+                    <div id="sales-chart" style="height: 350px;"></div>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="chart-container">
+                    <h4>📦 Inventory Status</h4>
+                    <div id="inventory-chart" style="height: 350px;"></div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-12">
+                <div class="chart-container">
+                    <h4>🏆 Top Products</h4>
+                    <div id="products-chart" style="height: 300px;"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- API Token Input -->
+        <div class="row mt-4">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-body">
+                        <h5>🔑 API Configuration</h5>
+                        <div class="form-group">
+                            <label>API Token:</label>
+                            <input type="text" class="form-control" id="api-token" 
+                                   value="b5b2f64f0fd8a0c6736bfe7b5b688d0f1083555b" 
+                                   placeholder="Enter your API token">
+                        </div>
+                        <small class="text-muted">
+                            Default token is pre-filled. Get your token from: /admin/ → Tokens
+                        </small>
+                    </div>
                 </div>
             </div>
         </div>
     </div>
 
-    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+    <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+    
+    <script>
+    // Dashboard JavaScript
+    const API_BASE = window.location.origin + '/api';
+    
+    function getApiToken() {
+        return document.getElementById('api-token').value;
+    }
+    
+    function getHeaders() {
+        return {
+            'Authorization': `Token ${getApiToken()}`,
+            'Content-Type': 'application/json'
+        };
+    }
+    
+    async function fetchData(endpoint) {
+        try {
+            const response = await fetch(`${API_BASE}${endpoint}`, {
+                headers: getHeaders()
+            });
+            
+            if (!response.ok) {
+                throw new Error(`HTTP ${response.status}`);
+            }
+            
+            return await response.json();
+        } catch (error) {
+            console.error('Fetch error:', error);
+            return null;
+        }
+    }
+    
+    async function updateStats() {
+        console.log('Updating stats...');
+        
+        // Get inventory stats
+        const inventoryStats = await fetchData('/inventory/stats/');
+        if (inventoryStats) {
+            document.getElementById('total-products').textContent = inventoryStats.total_products || 0;
+            document.getElementById('stock-value').textContent = '$' + (inventoryStats.total_stock_value || 0).toLocaleString();
+            document.getElementById('low-stock').textContent = inventoryStats.low_stock_products || 0;
+        }
+        
+        // Get sales stats
+        const salesStats = await fetchData('/sales/stats/');
+        if (salesStats && salesStats.month) {
+            document.getElementById('total-sales').textContent = '$' + (salesStats.month.total_amount || 0).toLocaleString();
+        }
+    }
+    
+    async function updateSalesChart() {
+        console.log('Updating sales chart...');
+        
+        const salesStats = await fetchData('/sales/stats/');
+        if (!salesStats) return;
+        
+        const data = [{
+            x: ['Today', 'This Week', 'This Month'],
+            y: [
+                salesStats.today?.total_amount || 0,
+                salesStats.week?.total_amount || 0,
+                salesStats.month?.total_amount || 0
+            ],
+            type: 'bar',
+            marker: {
+                color: ['#667eea', '#764ba2', '#f093fb']
+            }
+        }];
+        
+        const layout = {
+            title: 'Sales Performance',
+            xaxis: { title: 'Period' },
+            yaxis: { title: 'Amount ($)' },
+            plot_bgcolor: 'rgba(0,0,0,0)',
+            paper_bgcolor: 'rgba(0,0,0,0)'
+        };
+        
+        Plotly.newPlot('sales-chart', data, layout, {responsive: true});
+    }
+    
+    async function updateInventoryChart() {
+        console.log('Updating inventory chart...');
+        
+        const inventoryStats = await fetchData('/inventory/stats/');
+        if (!inventoryStats) return;
+        
+        const normalStock = (inventoryStats.total_products || 0) - (inventoryStats.low_stock_products || 0);
+        
+        const data = [{
+            labels: ['Normal Stock', 'Low Stock'],
+            values: [normalStock, inventoryStats.low_stock_products || 0],
+            type: 'pie',
+            marker: {
+                colors: ['#11998e', '#ff6b6b']
+            }
+        }];
+        
+        const layout = {
+            title: 'Inventory Status',
+            plot_bgcolor: 'rgba(0,0,0,0)',
+            paper_bgcolor: 'rgba(0,0,0,0)'
+        };
+        
+        Plotly.newPlot('inventory-chart', data, layout, {responsive: true});
+    }
+    
+    async function updateProductsChart() {
+        console.log('Updating products chart...');
+        
+        const products = await fetchData('/inventory/products/');
+        if (!products || !products.results) return;
+        
+        // Get top 5 products by stock value
+        const topProducts = products.results
+            .map(p => ({
+                name: p.name,
+                value: p.current_stock * parseFloat(p.selling_price)
+            }))
+            .sort((a, b) => b.value - a.value)
+            .slice(0, 5);
+        
+        const data = [{
+            x: topProducts.map(p => p.name),
+            y: topProducts.map(p => p.value),
+            type: 'bar',
+            marker: {
+                color: '#5f27cd'
+            }
+        }];
+        
+        const layout = {
+            title: 'Top Products by Stock Value',
+            xaxis: { title: 'Products' },
+            yaxis: { title: 'Stock Value ($)' },
+            plot_bgcolor: 'rgba(0,0,0,0)',
+            paper_bgcolor: 'rgba(0,0,0,0)'
+        };
+        
+        Plotly.newPlot('products-chart', data, layout, {responsive: true});
+    }
+    
+    async function refreshData() {
+        console.log('Refreshing all data...');
+        
+        // Show loading state
+        document.querySelectorAll('.stat-value').forEach(el => el.textContent = '...');
+        
+        // Update all components
+        await Promise.all([
+            updateStats(),
+            updateSalesChart(),
+            updateInventoryChart(),
+            updateProductsChart()
+        ]);
+        
+        console.log('Data refresh complete!');
+    }
+    
+    // Initialize dashboard
+    document.addEventListener('DOMContentLoaded', function() {
+        console.log('Dashboard initializing...');
+        refreshData();
+    });
+    
+    // Auto-refresh every 30 seconds
+    setInterval(refreshData, 30000);
+    </script>
 </body>
 </html>

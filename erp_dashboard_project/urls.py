@@ -18,9 +18,15 @@ from django.contrib import admin
 from django.urls import path, include
 from django.conf import settings
 from django.conf.urls.static import static
+from api_root import api_root, api_docs_view
+from home_view import home_view
 
 urlpatterns = [
+    path('', home_view, name='home'),
     path('admin/', admin.site.urls),
+    path('accounts/', include('django.contrib.auth.urls')),
+    path('api/', api_root, name='api-root'),
+    path('api/docs/', api_docs_view, name='api-docs'),
     path('api/users/', include('apps.users.urls')),
     path('api/inventory/', include('apps.inventory.urls')),
     path('api/sales/', include('apps.sales.urls')),

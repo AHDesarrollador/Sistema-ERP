@@ -6,11 +6,21 @@ class User(AbstractUser):
     phone = models.CharField(max_length=20, blank=True)
     department = models.CharField(max_length=100, blank=True)
     is_manager = models.BooleanField(default=False)
+    can_view_dashboard = models.BooleanField(default=False, help_text="Can access dashboard")
+    can_manage_inventory = models.BooleanField(default=False, help_text="Can manage inventory")
+    can_manage_sales = models.BooleanField(default=False, help_text="Can manage sales")
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
     USERNAME_FIELD = 'email'
     REQUIRED_FIELDS = ['username']
+    
+    class Meta:
+        permissions = [
+            ("view_dashboard", "Can view dashboard"),
+            ("manage_inventory", "Can manage inventory"),
+            ("manage_sales", "Can manage sales"),
+        ]
 
 class UserProfile(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='profile')

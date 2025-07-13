@@ -94,9 +94,16 @@ python manage.py runserver
 
 ## URLs Principales
 
-- **Admin Panel**: http://localhost:8000/admin/
+- **Home**:http://localhost:8000/
+- **Admin Panel**: http://localhost:8000/admin/   (mailto:admin@erp.com/admin123)
 - **API Root**: http://localhost:8000/api/
-- **Dashboard**: http://localhost:8000/dashboard/
+- **Dashboard**: http://localhost:8000/dashboard/ (mailto:admin@erp.com/admin123)
+- **Docs**: http://localhost:8000/api/docs/
+
+
+
+
+
 
 ## API Endpoints
 
