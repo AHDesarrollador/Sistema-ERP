@@ -1,4 +1,4 @@
-# 🔒 Solución al Error CSRF - Login Dashboard
+# 🔒 Solucion al oosible error CSRF - Login Dashboard
 
 ## ❌ **PROBLEMA RESUELTO**
 
