@@ -166,12 +166,4 @@ curl -H "Authorization: Token 86f3295ac254f35c44b75715d789799066c6848c" \
 - ✅ Autenticación segura
 - ✅ Base de datos con datos de prueba
 
-### Para Producción
-- ✅ Listo para usar inmediatamente
-- ✅ Escalable y modular
-- ✅ APIs documentadas
-- ✅ Código bien estructurado
-
----
-
 **🚀 ¡Comienza ahora con `python3 run.py`!**
